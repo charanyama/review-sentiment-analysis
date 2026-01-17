@@ -1,0 +1,43 @@
+{% block title %}Analyze Text{% endblock %}
+
+{% block content %}
+<div class="analyze-section">
+    <h2 class="section-heading">Analyze Text</h2>
+
+    <div class="request-details-container" style="max-width: 800px; margin: 0 auto;">
+        {% if error %}
+        <div class="error-box" style="margin-bottom: 1.5rem;">
+            <p class="error-box-title">Error</p>
+            <p class="error-box-message">{{ error }}</p>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('analyze_text') }}">
+            <div style="margin-bottom: 1.5rem;">
+                <label for="review_text"
+                    style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #374151;">
+                    Enter your review text:
+                </label>
+                <textarea name="review_text" id="review_text" rows="8" required
+                    placeholder="Type or paste your review here..."
+                    style="width: 100%; padding: 1rem; border: 2px solid #e5e7eb; border-radius: 0.75rem; font-size: 1rem; resize: vertical; transition: all 0.3s ease;"
+                    onfocus="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 0 0 3px rgba(59, 130, 246, 0.1)'"
+                    onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'"></textarea>
+            </div>
+
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button type="submit" class="action-button action-button-primary" style="max-width: 200px;">
+                    <svg class="button-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                    <span>Analyze</span>
+                </button>
+                <a href="{{ url_for('index') }}" class="action-button"
+                    style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; max-width: 200px; text-decoration: none;">
+                    <span>Cancel</span>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sentiment Analysis{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+</head>
+
+<body class="bg-gray-50">
+    <!-- Main Container -->
+    <div class="main-content flex min-h-screen">
+
+        <!-- Hamburger Menu -->
+        <label class="hamburger-menu">
+            <input type="checkbox" id="sidebar-toggle" />
+        </label>
+
+        <!-- Sidebar -->
+        <aside
+            class="sidebar fixed top-0 left-0 w-80 max-w-80 h-screen bg-white border-r border-gray-200 overflow-y-auto transition-transform duration-300 z-50">
+            <h2
+                class="sticky top-0 bg-white text-gray-900 text-lg font-semibold text-center py-4 px-4 border-b border-gray-200 z-10">
+                Past Requests
+            </h2>
+            <ul class="p-4 space-y-2">
+                {% if requests %}
+                {% for req in requests %}
+                <li class="slide-in" style="animation-delay: {{ loop.index0 * 0.05 }}s;">
+                    <a href="{{ url_for('home', log_id=req.log_id) }}"
+                        class="block p-3 rounded border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all duration-200">
+                        <div class="flex items-start gap-2">
+                            <span
+                                class="text-sm mt-0.5 {% if req.success %}text-green-600{% else %}text-red-600{% endif %}">
+                                {% if req.success %}✓{% else %}✗{% endif %}
+                            </span>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm text-gray-900 truncate">
+                                    {% if req.request_type == 'text' %}
+                                    {% if req.review %}
+                                    {{ req.review[:40] }}{% if req.review|length > 40 %}...{% endif %}
+                                    {% else %}
+                                    Text Analysis
+                                    {% endif %}
+                                    {% elif req.request_type == 'file' %}
+                                    {% if req.file_type %}
+                                    {{ req.file_type|upper }} File
+                                    {% else %}
+                                    File Upload
+                                    {% endif %}
+                                    {% endif %}
+                                </p>
+                                <p class="text-xs text-gray-500 mt-0.5">{{ req.timestamp }}</p>
+                            </div>
+                        </div>
+                    </a>
+                </li>
+                {% endfor %}
+                {% else %}
+                <li class="text-gray-500 text-sm text-center py-8">No requests yet</li>
+                {% endif %}
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content-section flex-1 ml-80 p-8 transition-all duration-300">
+            {% block content %}
+            <!-- Analyze Buttons -->
+            <div class="mb-12">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-6 text-center">Analyze</h2>
+                <div class="flex flex-col md:flex-row gap-4 justify-center items-center max-w-2xl mx-auto">
+                    <a href="{{ url_for('text_page') }}"
+                        class="w-full md:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                            </path>
+                        </svg>
+                        <span>Analyse Text</span>
+                    </a>
+                    <a href="{{ url_for('file_page') }}"
+                        class="w-full md:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors duration-200">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                            </path>
+                        </svg>
+                        <span>Upload CSV/Excel File</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Request Details -->
+            <div>
+                <h2 class="text-2xl font-semibold text-gray-900 mb-6 text-center">Request Details</h2>
+                <div class="bg-white rounded-lg border border-gray-200 p-6 max-w-4xl mx-auto">
+                    {% if selected_request %}
+                    <div class="fade-in">
+                        <!-- Header -->
+                        <div
+                            class="flex flex-col md:flex-row justify-between items-start gap-4 pb-4 border-b border-gray-200 mb-4">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Request Details</h3>
+                                <p class="text-sm text-gray-500 mt-1">Log ID: {{ selected_request.log_id }}</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <a href="{{ url_for('log_bp.download_log', log_id=selected_request.log_id) }}"
+                                    class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                                    Download JSON
+                                </a>
+                                <form method="POST"
+                                    action="{{ url_for('log_bp.delete_log', log_id=selected_request.log_id) }}"
+                                    class="inline"
+                                    onsubmit="return confirm('Are you sure you want to delete this request?');">
+                                    <button type="submit"
+                                        class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Details Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                            <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                <p class="text-xs font-medium text-gray-600 mb-1">Type</p>
+                                <p class="text-sm text-gray-900">{{ selected_request.request_type }}</p>
+                            </div>
+                            <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                <p class="text-xs font-medium text-gray-600 mb-1">Status</p>
+                                <p
+                                    class="text-sm font-medium {% if selected_request.success %}text-green-600{% else %}text-red-600{% endif %}">
+                                    {% if selected_request.success %}✓ Success{% else %}✗ Failed{% endif %}
+                                </p>
+                            </div>
+                            <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                <p class="text-xs font-medium text-gray-600 mb-1">Timestamp</p>
+                                <p class="text-sm text-gray-900">{{ selected_request.timestamp }}</p>
+                            </div>
+                            {% if selected_request.file_type %}
+                            <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                <p class="text-xs font-medium text-gray-600 mb-1">File Type</p>
+                                <p class="text-sm text-gray-900">{{ selected_request.file_type|upper }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Error Message -->
+                        {% if not selected_request.success and selected_request.error %}
+                        <div class="p-4 bg-red-50 border border-red-200 rounded-lg mb-4">
+                            <p class="text-xs font-semibold text-red-800 mb-1">Error</p>
+                            <p class="text-sm text-red-700">{{ selected_request.error }}</p>
+                        </div>
+                        {% endif %}
+
+                        <!-- Text Analysis Results -->
+                        {% if selected_request.request_type == 'text' and selected_request.success and
+                        selected_request.review %}
+                        <div class="border-t border-gray-200 pt-4 mt-4">
+                            <h4 class="text-base font-semibold text-gray-900 mb-3">Text Analysis Results</h4>
+
+                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 mb-4">
+                                <p class="text-xs font-medium text-gray-600 mb-2">Review Text</p>
+                                <p class="text-sm text-gray-900 whitespace-pre-wrap">{{ selected_request.review }}</p>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div
+                                    class="p-4 bg-white rounded-lg border-2 {% if selected_request.prediction == 'positive' %}border-green-500{% else %}border-red-500{% endif %}">
+                                    <p class="text-xs font-medium text-gray-600 mb-1">Sentiment</p>
+                                    <p
+                                        class="text-2xl font-semibold {% if selected_request.prediction == 'positive' %}text-green-600{% else %}text-red-600{% endif %} capitalize">
+                                        {{ selected_request.prediction|default('N/A') }}
+                                    </p>
+                                </div>
+                                {% if selected_request.probability is not none %}
+                                <div class="p-4 bg-white rounded-lg border-2 border-blue-500">
+                                    <p class="text-xs font-medium text-gray-600 mb-1">Confidence</p>
+                                    <p class="text-2xl font-semibold text-blue-600">
+                                        {{ "%.2f"|format(selected_request.probability * 100) }}%
+                                    </p>
+                                </div>
+                                {% else %}
+                                <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                    <p class="text-xs font-medium text-gray-600 mb-1">Confidence</p>
+                                    <p class="text-xl text-gray-400">N/A</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- File Success -->
+                        {% if selected_request.request_type == 'file' and selected_request.success %}
+                        <div class="p-4 bg-green-50 border border-green-200 rounded-lg mt-4">
+                            <p class="text-xs font-semibold text-green-800 mb-1">File Processing</p>
+                            <p class="text-sm text-green-700">File was successfully processed and analyzed</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-12">
+                        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                            </path>
+                        </svg>
+                        <p class="text-gray-500">Select a request from the sidebar to see details.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endblock %}
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('Page loaded successfully');
+
+            // Auto-close sidebar on mobile after clicking a link
+            const sidebarLinks = document.querySelectorAll('.sidebar a');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function () {
+                    if (window.innerWidth <= 767) {
+                        sidebarToggle.checked = true; // Close sidebar on mobile
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

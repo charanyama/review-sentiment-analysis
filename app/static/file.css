@@ -1,0 +1,111 @@
+table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+}
+
+th {
+    position: sticky;
+    top: 0;
+    background: #eee;
+    z-index: 10;
+    min-width: 100px;
+    max-width: 300px;
+    border-top: 1px solid #777;
+}
+
+td,
+th {
+    border: 1px solid #777;
+    padding: 0.5rem;
+    text-align: center;
+}
+
+.positive {
+    background-color: hsl(150, 50%, 85%);
+}
+
+.negative {
+    background-color: hsl(0, 50%, 85%);
+}
+
+/* Mobile Devices */
+
+@media (max-width: 640px) {
+
+    h1 {
+        font-size: 1.5rem;
+        margin: 1rem 0;
+    }
+
+    main {
+        padding: 0.5rem;
+        gap: 1rem;
+    }
+
+    /* Stack upload + column selector */
+    .flex.gap-10.items-center {
+        flex-direction: column;
+        gap: 1.5rem;
+        width: 100%;
+    }
+
+    #uploadArea {
+        width: 100%;
+        max-width: 100%;
+        padding: 1rem;
+    }
+
+    #browseBtn {
+        width: 100%;
+    }
+
+    #featureColumn {
+        width: 100%;
+    }
+
+    #analyzeBtn {
+        width: 100%;
+    }
+
+    /* Table tweaks */
+    th {
+        width: 180px;
+        font-size: 0.75rem;
+    }
+
+    td,
+    th {
+        padding: 0.35rem;
+    }
+}
+
+
+/* Tablets (641px – 1024px) */
+@media (min-width: 641px) and (max-width: 1024px) {
+    main {
+        padding: 1rem;
+        gap: 1.5rem;
+    }
+
+    .flex.gap-10.items-center {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 2rem;
+    }
+
+    #uploadArea {
+        max-width: 90%;
+    }
+
+    th,
+    .cell {
+        width: 220px;
+        font-size: 0.8rem;
+    }
+
+    td,
+    th {
+        padding: 0.4rem;
+    }
+}

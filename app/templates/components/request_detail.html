@@ -1,0 +1,100 @@
+<div style="animation: fadeInUp 0.5s ease;">
+    <div class="detail-header">
+        <div class="detail-title-section">
+            <h3>Request Details</h3>
+            <p class="detail-log-id">Log ID: {{ selected_request.log_id }}</p>
+        </div>
+        <div class="detail-actions">
+            <a href="{{ url_for('download_request', log_id=selected_request.log_id) }}" 
+               class="detail-button button-download">
+                Download JSON
+            </a>
+            <form method="POST" action="{{ url_for('delete_request_route', log_id=selected_request.log_id) }}" 
+                  style="display: inline;"
+                  onsubmit="return confirm('Are you sure you want to delete this request?');">
+                <button type="submit" class="detail-button button-delete">
+                    Delete
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="detail-grid">
+        <div class="detail-field">
+            <p class="detail-field-label">Type</p>
+            <p class="detail-field-value">{{ selected_request.request_type }}</p>
+        </div>
+        <div class="detail-field">
+            <p class="detail-field-label">Status</p>
+            <p class="detail-field-value {% if selected_request.success %}status-success{% else %}status-failed{% endif %}">
+                {% if selected_request.success %}✓ Success{% else %}✗ Failed{% endif %}
+            </p>
+        </div>
+        <div class="detail-field">
+            <p class="detail-field-label">Timestamp</p>
+            <p class="detail-field-value">{{ selected_request.timestamp }}</p>
+        </div>
+        {% if selected_request.file_type %}
+        <div class="detail-field">
+            <p class="detail-field-label">File Type</p>
+            <p class="detail-field-value">{{ selected_request.file_type|upper }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if not selected_request.success and selected_request.error %}
+    <div class="error-box">
+        <p class="error-box-title">Error</p>
+        <p class="error-box-message">{{ selected_request.error }}</p>
+    </div>
+    {% endif %}
+
+    {% if selected_request.request_type == 'text' %}
+        {% if selected_request.success and selected_request.review %}
+        <div class="analysis-results">
+            <h4 class="analysis-title">Text Analysis Results</h4>
+            
+            <div class="review-text-box">
+                <p class="review-text-label">Review Text</p>
+                <p class="review-text-content">{{ selected_request.review }}</p>
+            </div>
+            
+            <div class="sentiment-grid">
+                <div class="sentiment-box {% if selected_request.prediction == 'positive' %}sentiment-positive{% else %}sentiment-negative{% endif %}">
+                    <p class="sentiment-box-label">Sentiment</p>
+                    <p class="sentiment-value">{{ selected_request.prediction|default('N/A') }}</p>
+                </div>
+                {% if selected_request.probability is not none %}
+                <div class="sentiment-box confidence-box">
+                    <p class="sentiment-box-label">Confidence</p>
+                    <p class="confidence-value">{{ "%.2f"|format(selected_request.probability * 100) }}%</p>
+                </div>
+                {% else %}
+                <div class="sentiment-box no-data-box">
+                    <p class="sentiment-box-label">Confidence</p>
+                    <p class="no-data-value">N/A</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% elif not selected_request.success %}
+        <div class="analysis-results">
+            <div class="review-text-box" style="background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%); border-left-color: #9ca3af;">
+                <p class="review-text-label">Review Text</p>
+                <p class="review-text-content" style="color: #6b7280; font-style: italic;">
+                    {{ selected_request.review|default('No text available') }}
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    {% if selected_request.request_type == 'file' and selected_request.success %}
+    <div class="analysis-results">
+        <div class="file-success-box">
+            <p class="file-success-title">File Processing</p>
+            <p class="file-success-message">File was successfully processed and analyzed</p>
+        </div>
+    </div>
+    {% endif %}
+</div>

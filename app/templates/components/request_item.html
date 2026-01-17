@@ -1,0 +1,18 @@
+<li class="request-item {% if req.success %}request-item-success{% else %}request-item-failure{% endif %}"
+    style="animation: slideIn 0.4s ease {{ loop.index0 * 0.05 }}s both;">
+    <a href="{{ url_for('index', log_id=req.log_id) }}" style="text-decoration: none; color: inherit; display: block;">
+        <div class="request-item-content">
+            <span class="request-item-icon" style="color: {% if req.success %}#10b981{% else %}#ef4444{% endif %};">
+                {% if req.success %}✓{% else %}✗{% endif %}
+            </span>
+            <div class="request-item-text">
+                {% if req.request_type == 'text' %}
+                    {{ req.review[:30] }}{% if req.review|length > 30 %}...{% endif %}
+                {% elif req.request_type == 'file' %}
+                    {{ req.file_type|upper }} File
+                {% endif %}
+                <span class="request-timestamp">{{ req.timestamp }}</span>
+            </div>
+        </div>
+    </a>
+</li>
